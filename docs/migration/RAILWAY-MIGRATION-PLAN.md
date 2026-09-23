@@ -8,8 +8,33 @@
 ## Approved amendments
 
 1. **Bedrock identity.** Do not create a new IAM user. Reuse the existing MBS-owned `practice-toolbox-bedrock` identity, and verify and preserve its existing least-privilege and zero-data-retention configuration.
-2. **Railway Postgres version.** Do not create Railway Postgres until the actual Replit production PostgreSQL version has been checked with `SELECT version();`. The Railway major version must then be equal to or newer than production.
+2. **Railway Postgres version.** Do not create Railway Postgres until the actual Replit production PostgreSQL version has been checked with `SELECT version();`. The Railway major version must then be equal to or newer than production. **Completed 23 September 2026: production is 16.15; Railway uses major version 16.**
 3. **Replit publishing freeze.** Replit publishing is **frozen from 23 September 2026 until migration and cutover are complete.** Replit applies schema changes to the production database on publish (`_system.replit_database_migrations_v1`), so any publish could change the schema being migrated.
+
+## Production database verification (23 September 2026)
+
+Amendment 2 is complete. A single read-only query was run by the owner in Replit's Database tool (Production Database → My Data → Playground, with Edit off). No connection string or credential left Replit, and nothing was written.
+
+| Check | Result |
+|---|---|
+| PostgreSQL version | **16.15** (`PostgreSQL 16.15 ... aarch64-unknown-linux-gnu ... 64-bit`) |
+| Time zone | **`GMT`** (UTC+0 all year, no daylight saving; same offset as `UTC`) |
+| Replit publish bookkeeping table (`_system.replit_database_migrations_v1`) | Present |
+| `financial_clarity_reviews` table | Absent |
+| Users | 18 |
+| Latest Email Analytics sync run | 2026-09-23 20:56 UTC, 12 minutes before the query ran at 21:08 UTC |
+| Latest session expiry | 2026-09-29 11:33 UTC (a sign-in on 22 September; sessions last 7 days) |
+
+This was confirmed as the live production database, not development: the Replit publish table exists only in production; the missing `financial_clarity_reviews` table matches the production inventory (the development database has it); and the recent sync run and session show live use.
+
+Consequences for this plan:
+
+- **Railway Postgres must use major version 16**, an exact match with production. Export with a PostgreSQL 16 or 17 client.
+- **Time zone:** Railway Postgres defaults to `UTC`, which has the same offset as `GMT`, so stored dates and times do not shift. To match production exactly, set the Railway database time zone to `GMT` during setup (a database setting, not a code change).
+- **Live production schema drift is confirmed** (finding D): production lacks `financial_clarity_reviews`. Migrate the schema exactly as it is.
+- **The live Email Analytics scheduler is confirmed active.** Staging must have automatic refresh turned off after the snapshot is restored.
+- **Replit publishing remains frozen** (amendment 3).
+- **Unapplied Replit Agent changes must remain unapplied.** The Replit workspace shows a pending Agent task ("Send automated email remind…", marked Ready for review with an Apply changes button). That work is not part of the `1.0.0-pre-migration-stable` baseline in GitHub and must not be applied in Replit before or during migration.
 
 ## Verification findings
 
@@ -73,7 +98,7 @@ Set per Railway environment.
 ## Database: Neon to Railway PostgreSQL
 
 - Change 2 is the only code change.
-- **First check the Replit production version with `SELECT version();` (amendment 2).** The `postgresql-16` module in `.replit` describes the development database, not production. Only then create Railway Postgres, at a major version equal to or newer than production.
+- **First check the Replit production version with `SELECT version();` (amendment 2).** The `postgresql-16` module in `.replit` describes the development database, not production. Only then create Railway Postgres, at a major version equal to or newer than production. **Done: production is PostgreSQL 16.15, time zone `GMT`. Create Railway Postgres at major version 16.**
 - **Never run `npm run db:push` against Railway production.** It would create the missing tables (a behaviour change) and can propose destructive changes. The production schema comes only from the restored dump.
 
 ## Production data export, migration and verification
@@ -89,7 +114,7 @@ Set per Railway environment.
    - `max(id)` against each sequence's `last_value`;
    - `md5` of ordered rows for `users`, `organisations`, `valuation_submissions` and the email analytics tables;
    - constraint and index counts against `production-constraints.csv`;
-   - `SHOW timezone` on both (the code uses timestamps without time zones);
+   - `SHOW timezone` on both (the code uses timestamps without time zones; production is `GMT`);
    - the application smoke tests in the cutover checklist.
 
 ## Sessions and authentication
@@ -211,7 +236,8 @@ No incompatibility (finding G). There are no runtime writes or uploads; `attache
 
 **Must verify before cutover:**
 
-- Replit production PostgreSQL version (`SELECT version();`) before creating Railway Postgres, and production time zone
+- ~~Replit production PostgreSQL version and time zone~~ **Done 23 September 2026:** PostgreSQL 16.15, time zone `GMT`
+- Replit Agent pending changes remain unapplied
 - Fresh schema inventory, and the decision on schema drift
 - Whether `ANTHROPIC_API_KEY` is set in Replit
 - Entra and Karbon IP or Conditional Access restrictions; Microsoft secret expiry
@@ -258,5 +284,5 @@ No incompatibility (finding G). There are no runtime writes or uploads; `attache
 
 **Manual setup before coding:**
 
-- Railway: Pro plan; Railway GitHub app with access to `mbs-practice-toolbox` only; project in EU West with `staging` and `production` environments; auto-deploy off for production; variables entered; no custom domains yet. **Railway Postgres is created only after the Replit production version has been checked (amendment 2).**
+- Railway: Pro plan; Railway GitHub app with access to `mbs-practice-toolbox` only; project in EU West with `staging` and `production` environments; auto-deploy off for production; variables entered; no custom domains yet. **Railway Postgres is created only after the Replit production version has been checked (amendment 2); that check is done, so create it at major version 16, with the database time zone set to `GMT`.**
 - Outside Railway: locate the Replit production database connection string (keep it out of chat and source control); install PostgreSQL client tools; create a Stripe test-mode webhook for staging; confirm the existing `practice-toolbox-bedrock` identity and its keys (amendment 1); confirm the DNS host; keep Replit publishing frozen (amendment 3).
