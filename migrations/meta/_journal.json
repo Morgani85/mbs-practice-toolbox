@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1749664701765,
+      "tag": "0000_wakeful_blockbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1749669482170,
+      "tag": "0001_orange_elektra",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750000000000,
+      "tag": "0002_email_analytics",
+      "breakpoints": true
+    }
+  ]
+}

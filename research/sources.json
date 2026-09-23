@@ -1,0 +1,62 @@
+{
+  "aws-bedrock-retention": {
+    "title": "Data retention in Amazon Bedrock",
+    "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/data-retention.html",
+    "tier": 1
+  },
+  "aws-bedrock-abuse": {
+    "title": "Abuse detection in Amazon Bedrock",
+    "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/abuse-detection.html",
+    "tier": 1
+  },
+  "aws-bedrock-regions": {
+    "title": "Model support by AWS Region",
+    "url": "https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html",
+    "tier": 1
+  },
+  "azure-openai-privacy": {
+    "title": "Data, privacy, and security for Azure Direct Models",
+    "url": "https://learn.microsoft.com/en-us/legal/cognitive-services/openai/data-privacy",
+    "tier": 1
+  },
+  "azure-abuse-monitoring": {
+    "title": "Abuse monitoring",
+    "url": "https://learn.microsoft.com/en-us/azure/ai-foundry/openai/concepts/abuse-monitoring",
+    "tier": 1
+  },
+  "openai-api-data": {
+    "title": "How your data is used to improve model performance",
+    "url": "https://developers.openai.com/api/docs/guides/your-data",
+    "tier": 1
+  },
+  "anthropic-retention": {
+    "title": "API and data retention",
+    "url": "https://platform.claude.com/docs/en/manage-claude/api-and-data-retention.md",
+    "tier": 1
+  },
+  "anthropic-residency": {
+    "title": "Data residency",
+    "url": "https://platform.claude.com/docs/en/manage-claude/data-residency.md",
+    "tier": 1
+  },
+  "openrouter-collection": {
+    "title": "Data collection",
+    "url": "https://openrouter.ai/docs/guides/privacy/data-collection",
+    "tier": 1
+  },
+  "replit-model-improvement": {
+    "title": "Model improvement and training",
+    "url": "https://docs.replit.com/legal-and-security-info/model-improvement.md",
+    "tier": 1
+  },
+  "graph-permissions": {
+    "title": "Microsoft Graph permissions reference",
+    "url": "https://learn.microsoft.com/en-us/graph/permissions-reference#mail-permissions",
+    "tier": 1
+  },
+  "rfc-3834": {
+    "title": "RFC 3834: Recommendations for Automatic Responses to Electronic Mail",
+    "url": "https://www.rfc-editor.org/rfc/rfc3834",
+    "tier": 1
+  }
+}

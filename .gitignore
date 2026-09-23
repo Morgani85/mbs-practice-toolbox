@@ -1,0 +1,142 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Production builds
+dist/
+client/dist/
+build/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+*.db
+*.sqlite
+*.dump
+*.dump.gz
+*.backup
+*.sql.gz
+database-export*/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+cookies.txt
+*_cookies.txt
+uploads/
+screenshots/
+
+# Uploaded prompts, transcripts, client documents and reference files.
+# Keep only the images that are imported or served by the application.
+attached_assets/*
+!attached_assets/Favicon_1751475398195.png
+!attached_assets/Screenshot 2025-07-02 at 16.25.36_1751469958155.png
+!attached_assets/Screenshot_2026-03-26_at_20.25.32_1774559830128.png
+!attached_assets/Screenshot_2026-03-26_at_20.25.53_1774559830128.png
+!attached_assets/Screenshot_2026-03-26_at_20.26.11_1774559830127.png
+!attached_assets/Screenshot_2026-03-26_at_20.26.39_1774559830127.png
+!attached_assets/Screenshot_2026-03-26_at_20.27.03_1774559830126.png
+
+# Local Replit/agent state that is not application source
+.agents/
+.local/
+.config/
+.upm/
+
+# Local generated/reference files
+/all_teams.png
+/generated-icon.png
+/pod1_filtered.png
+/practice-toolbox-migration-readiness-*.zip
+/practice-toolbox-migration-readiness-*.zip.sha256
+/migration_export_package/
+playwright-report/
+test-results/
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# Vercel
+.vercel
+
+# Private keys and certificates
+*.pem
+*.key
+*.p12
+
+# Database dump checksums (see migration/database/export-production.sh)
+*.dump.sha256
+
+# Claude Code local settings
+.claude/settings.local.json
