@@ -55,7 +55,7 @@ All items in `AUDIT-CORRECTIONS.md` were confirmed. Verification against the rep
 
 ## Must change before Railway
 
-These five changes are the complete set of code and configuration changes for Railway. Nothing else in the application changes.
+These changes are the complete set of code and configuration changes for Railway. Nothing else in the application changes.
 
 | # | File | Change | Why it is required |
 |---|---|---|---|
@@ -64,6 +64,7 @@ These five changes are the complete set of code and configuration changes for Ra
 | 3 | `server/index.ts` | Change `const port = 5000` to `parseInt(process.env.PORT \|\| "5000", 10)`. | Railway assigns the port through `PORT`. The 5000 fallback keeps Replit and local behaviour unchanged. |
 | 4 | New: `Dockerfile`, `.dockerignore`, `railway.json` | Base image `node:20-bookworm-slim`. Install `chromium`, `fonts-liberation` and `ca-certificates` with `apt`. Set `PUPPETEER_SKIP_DOWNLOAD=true`. Run a full `npm ci` (including dev dependencies), then `npm run build`; start with `npm run start`. `railway.json` sets the Dockerfile builder, health check path `/`, 1 replica and restart on failure, with **no** pre-deploy `db:push`. | Pins Node 20 (Railway's default builder may choose a newer version). Provides Chromium in place of `replit.nix`. Keeps dev dependencies installed because of finding B. The migration package's Dockerfile cannot be reused: its `source/` paths no longer apply and `--omit=dev` would crash the app. |
 | 5 | `client/index.html:12-13` | Remove the `replit-dev-banner.js` script tag. | Every production page currently loads executable code from replit.com. It has no function outside Replit and is an unmanaged third-party dependency. |
+| 6 | `server/index.ts` | Remove `STRIPE_SECRET_KEY` from the required startup variables. (Added 24 September 2026.) | Practice Toolbox is no longer being commercialised, so the key is not needed for internal use. The Stripe code already handles a missing key; the startup check was the only blocker. No other Stripe functionality is changed or removed. |
 
 No code change is needed for:
 
@@ -80,10 +81,10 @@ Set per Railway environment.
 |---|---|---|
 | `DATABASE_URL` | Boot | `${{Postgres.DATABASE_URL}}` (private internal URL) |
 | `SESSION_SECRET` | Boot | At least 32 characters. Generate a new value for each environment. |
-| `STRIPE_SECRET_KEY` | Boot | Live key in production, test key in staging |
+| `STRIPE_SECRET_KEY` | Optional | Not required at startup (change 6). Set it only if the abandoned paid-subscription/billing features are intentionally used; without it, billing is disabled and the Stripe routes return 503. |
 | `RESEND_API_KEY` | Boot | Finding C |
 | `PORT` | Automatic | Set by Railway; do not set manually |
-| `STRIPE_WEBHOOK_SECRET` | Billing | Production value is unchanged because the domain does not change. Staging uses its own test-mode endpoint and secret. |
+| `STRIPE_WEBHOOK_SECRET` | Optional | Only if billing is intentionally used. Without it the Stripe webhook returns 400. |
 | `MICROSOFT_TENANT_ID`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET` | Email Analytics | Copy the values, or rotate the secret |
 | `EMAIL_ANALYTICS_DEFAULT_MAILBOXES` | Email Analytics | Move from `.replit` (finding F) |
 | `KARBON_API_KEY`, `KARBON_ACCESS_KEY` | Email Analytics | |
@@ -163,7 +164,7 @@ Change 3. Railway's routing and health check then use the assigned port.
 
 ## Stripe, Xero and Resend
 
-- **Stripe:** the domain does not change, so the webhook endpoint URL and secret stay the same. During cutover, keep Replit **stopped** rather than read-only, so webhooks fail and Stripe retries them against Railway (Stripe retries for up to 3 days) instead of writing to the old database. Staging uses test keys and a test-mode webhook endpoint; test checkout with a test organisation, because staging contains live customer IDs.
+- **Stripe:** optional. Practice Toolbox is no longer being commercialised as a paid SaaS product, so Stripe is needed only if the abandoned paid-subscription/billing features are intentionally used. No current internal MBS workflow depends on it: plan and user limits come from each organisation's database record, not from Stripe. Without `STRIPE_SECRET_KEY` the app starts, `server/stripe-service.ts` disables billing, the `/api/stripe/*` routes return 503 and the webhook returns 400. If billing is ever used: the domain does not change, so the webhook endpoint URL and secret stay the same; during cutover keep Replit **stopped** rather than read-only, so webhooks fail and Stripe retries them against Railway; and staging should use test keys and a test-mode webhook endpoint.
 - **Xero:** demo stub only (`server/routes.ts:5759`). No action.
 - **Resend:** required at boot. The sending domain's DNS records (SPF, DKIM) are unaffected; do not change them when editing DNS.
 
@@ -223,16 +224,16 @@ No incompatibility (finding G). There are no runtime writes or uploads; `attache
    - management report and its PDF;
    - valuation submission and its PDF;
    - manual Email Analytics refresh and the Bedrock readiness panel;
-   - invitation email and password reset;
-   - Stripe test checkout.
+   - invitation email (staff and coaching portal) and password reset;
+   - Stripe checkout only if billing is intentionally used.
 8. Add the custom domains in Railway, switch DNS, wait for the certificate.
-9. Re-test key flows on `app` and `www`; confirm Stripe webhook deliveries in the Stripe dashboard.
+9. Re-test key flows on `app` and `www`; if billing is used, confirm Stripe webhook deliveries in the Stripe dashboard.
 10. Monitor logs for 24 hours, including one scheduled Email Analytics run.
 11. After acceptance: take and verify a Railway backup, rotate Replit-era credentials, archive the Replit project, and lift the publishing freeze only by retiring Replit.
 
 ## Plan by category
 
-**Must change before Railway:** changes 1–5.
+**Must change before Railway:** changes 1–6.
 
 **Must verify before cutover:**
 
@@ -243,7 +244,7 @@ No incompatibility (finding G). There are no runtime writes or uploads; `attache
 - Entra and Karbon IP or Conditional Access restrictions; Microsoft secret expiry
 - Existing `practice-toolbox-bedrock` identity: permissions and zero-data-retention configuration unchanged
 - Chromium PDF output compared with Replit
-- Stripe test flows
+- Stripe test flows (only if billing is intentionally used)
 - Whether Replit's database accepts a restore (for rollback)
 - DNS host and Resend DNS records
 - A timed rehearsal cutover
@@ -285,4 +286,4 @@ No incompatibility (finding G). There are no runtime writes or uploads; `attache
 **Manual setup before coding:**
 
 - Railway: Pro plan; Railway GitHub app with access to `mbs-practice-toolbox` only; project in EU West with `staging` and `production` environments; auto-deploy off for production; variables entered; no custom domains yet. **Railway Postgres is created only after the Replit production version has been checked (amendment 2); that check is done, so create it at major version 16, with the database time zone set to `GMT`.**
-- Outside Railway: locate the Replit production database connection string (keep it out of chat and source control); install PostgreSQL client tools; create a Stripe test-mode webhook for staging; confirm the existing `practice-toolbox-bedrock` identity and its keys (amendment 1); confirm the DNS host; keep Replit publishing frozen (amendment 3).
+- Outside Railway: locate the Replit production database connection string (keep it out of chat and source control); install PostgreSQL client tools; create a Stripe test-mode webhook for staging only if billing is intentionally used; confirm the existing `practice-toolbox-bedrock` identity and its keys (amendment 1); confirm the DNS host; keep Replit publishing frozen (amendment 3).

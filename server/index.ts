@@ -95,9 +95,8 @@ app.use((req, res, next) => {
   if (!process.env.DATABASE_URL) {
     missingEnvVars.push("DATABASE_URL");
   }
-  if (!process.env.STRIPE_SECRET_KEY) {
-    missingEnvVars.push("STRIPE_SECRET_KEY");
-  }
+  // STRIPE_SECRET_KEY is optional: without it, stripe-service.ts disables billing
+  // and the Stripe routes return 503 "Stripe not configured".
 
   if (missingEnvVars.length > 0) {
     throw new Error(
