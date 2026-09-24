@@ -1,0 +1,15 @@
+.git
+node_modules
+dist
+.env
+.env.*
+*.log
+*.dump
+*.dump.gz
+*.dump.sha256
+*.sql.gz
+*.pem
+*.key
+*.p12
+.claude
+.DS_Store

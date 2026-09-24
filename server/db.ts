@@ -1,10 +1,8 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import pg from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
-// Configure WebSocket constructor for Neon with proper error handling
-neonConfig.webSocketConstructor = ws;
+const { Pool } = pg;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -12,8 +10,8 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Conservative connection pool settings optimized for Neon
-const pool = new Pool({ 
+// Conservative connection pool settings (unchanged from the previous Neon driver)
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 1, // Use single connection to avoid connection issues
   idleTimeoutMillis: 60000, // 1 minute
